@@ -1,0 +1,1063 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+..\FrameXML\UI.xsd">
+
+	<Font name="Fancy22Font" font="Fonts\MORPHEUS.TTF" virtual="true">
+		<Color r="1" g=".82" b="0"/>
+		<FontHeight>
+			<AbsValue val="22"/>
+		</FontHeight>
+	</Font>
+	<FontString name="QuestInfoSpellHeaderTemplate" inherits="QuestFont" justifyH="LEFT" virtual="true" />
+
+	<!-- Button templates -->
+	<Button name="ImmersionRewardSpellCodeTemplate" virtual="true">
+		<Scripts>
+			<OnEnter>
+				GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+				GameTooltip:SetQuestRewardSpell(self.rewardSpellIndex);
+			</OnEnter>
+			<OnClick>
+				if ( IsModifiedClick("CHATLINK") ) then
+					ChatEdit_InsertLink(GetQuestSpellLink(self.rewardSpellIndex));
+				end
+			</OnClick>
+			<OnLeave>
+				GameTooltip:Hide();
+				ResetCursor();
+			</OnLeave>
+		</Scripts>
+	</Button>
+	<Button name="ImmersionRewardItemCodeTemplate" virtual="true">
+		<Scripts>
+			<OnEnter>
+				if (self:GetAlpha() > 0) then
+					GameTooltip:SetOwner(self, "ANCHOR_TOPRIGHT", 0, 0);
+					if (self.objectType == "item") then
+						GameTooltip:SetQuestItem(self.type, self:GetID());
+						GameTooltip_ShowCompareItem(GameTooltip);
+					elseif (self.objectType == "currency") then
+						GameTooltip:SetQuestCurrency(self.type, self:GetID());
+					end
+				end
+				CursorUpdate(self);
+			</OnEnter>
+			<OnClick>
+				if ( IsModifiedClick() and self.objectType == "item") then
+					HandleModifiedItemClick(GetQuestItemLink(self.type, self:GetID()));
+				else
+					if ( self.container and self.container.chooseItems and self.type == "choice" ) then
+						self.container.itemChoice = self:GetID();
+						<!-- self.highlight:SetPoint('TOPLEFT', self, 'TOPLEFT', -4, 4); -->
+						self.highlight:SetPoint('TOPLEFT', self, 0, 0);
+						self.highlight:Show();
+						self.highlight.TextSheen.InAnim:Stop();
+						self.highlight.TextSheen.InAnim:Play();
+						self.highlight.Icon.InAnim:Stop();
+						self.highlight.Icon.InAnim:Play();
+						self.Icon.InAnim:Stop();
+						self.Border.InAnim:Stop();
+						self.Icon.InAnim:Play();
+						self.Border.InAnim:Play();
+					end
+				end
+			</OnClick>
+			<OnDoubleClick>
+				if ( not IsModifiedClick() and self.container and self.container.chooseItems and self.type == "choice" ) then
+					GetQuestReward(self:GetID());
+				end
+			</OnDoubleClick>
+			<OnLeave>
+				GameTooltip:Hide();
+				ResetCursor();
+			</OnLeave>
+			<OnUpdate>
+				CursorOnUpdate(self, elapsed);
+			</OnUpdate>
+		</Scripts>
+	</Button>
+
+	<Button name="ImmersionItemButtonTemplate" virtual="true" registerForClicks="LeftButtonUp,RightButtonUp">
+		<Size x="250" y="54" />
+		<Layers>
+			<Layer level="BORDER">
+				<Texture name="$parentIconTexture" parentKey="Icon">
+					<Size x="52" y="52" />
+					<Anchors>
+						<Anchor point="TOPLEFT" />
+					</Anchors>
+					<Animations>
+						<AnimationGroup parentKey="InAnim">
+							<Scale startDelay="0" duration="0.20" order="1" scaleX="1.15" scaleY="1.15">
+								<Origin point="CENTER"/>
+							</Scale>
+						</AnimationGroup>
+					</Animations>
+				</Texture>
+				<FontString name="$parentName" inherits="GameFontHighlight" justifyH="LEFT" parentKey="Name">
+					<Size x="170" y="36" />
+					<Anchors>
+						<Anchor point="LEFT" relativeTo="$parentIconTexture" relativePoint="RIGHT" x="8" y="0" />
+					</Anchors>
+				</FontString>
+			</Layer>
+			<Layer level="BACKGROUND">
+				<Texture name="$parentNameFrame" file="Interface\QuestFrame\UI-QuestItemNameFrame" parentKey="NameFrame">
+					<Size x="254" y="70" />
+					<Anchors>
+						<Anchor point="LEFT" relativeTo="$parentIconTexture" relativePoint="CENTER" x="-20" y="0" />
+					</Anchors>
+				</Texture>
+			</Layer>
+			<Layer level="ARTWORK">
+				<FontString name="$parentCount" inherits="NumberFontNormal" justifyH="RIGHT" parentKey="Count">
+					<Anchors>
+						<Anchor point="BOTTOMRIGHT" relativeTo="$parentIconTexture" x="-1" y="1" />
+					</Anchors>
+				</FontString>
+				<Texture name="$parentBorderexture" parentKey="Border" file="Interface\AddOns\Immersion\Textures\Button_Normal">
+					<Size x="53" y="53" />
+					<Anchors>
+						<Anchor point="CENTER" relativeTo="$parentIconTexture" relativePoint="CENTER" x="0" y="0"/>
+					</Anchors>
+					<Animations>
+						<AnimationGroup parentKey="InAnim">
+							<Scale startDelay="0" duration="0.20" order="1" scaleX="1.15" scaleY="1.15">
+								<Origin point="CENTER"/>
+							</Scale>
+						</AnimationGroup>
+					</Animations>
+				</Texture>
+			</Layer>
+		</Layers>
+	</Button>
+
+	<Button name="ImmersionQuestSpellTemplate" hidden="true" virtual="true">
+		<Size x="250" y="56"/>
+		<HitRectInsets left="0" right="0" top="0" bottom="14"/>
+		<Layers>
+			<Layer level="BACKGROUND">
+				<Texture parentKey="Icon" name="$parentIconTexture">
+					<Size x="39" y="39"/>
+					<Anchors>
+						<Anchor point="TOPLEFT" x="10" y="-2"/>
+					</Anchors>
+				</Texture>
+				<Texture parentKey="NameFrame" name="$parentNameFrame" file="Interface\QuestFrame\UI-QuestItemNameFrame">
+					<Size x="250" y="70"/>
+					<Anchors>
+						<Anchor point="LEFT" relativeTo="$parentIconTexture" relativePoint="RIGHT" x="-20" y="0"/>
+					</Anchors>
+				</Texture>
+			</Layer>
+			<Layer level="OVERLAY">
+				<Texture name="$parentSpellBorder" file="Interface\AddOns\Immersion\Textures\Spellbook-Parts">
+					<Size x="70" y="65"/>
+					<TexCoords left="0.00390625" right="0.27734375" top="0.44140625" bottom="0.69531250"/>
+					<Anchors>
+						<Anchor point="CENTER" relativeTo="$parentIconTexture" x="2" y="0"/>
+					</Anchors>
+				</Texture>
+				<FontString parentKey="Name" name="$parentName" inherits="GameFontHighlight" justifyH="LEFT" >
+					<Size x="170" y="36"/>
+					<Anchors>
+						<Anchor point="LEFT" relativeTo="$parentNameFrame" x="30" y="0"/>
+					</Anchors>
+				</FontString>
+			</Layer>
+		</Layers>
+		<Scripts>
+			<OnEnter>
+				if (self.spellID) then
+					GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+					GameTooltip:SetSpellByID(self.spellID);
+				end
+			</OnEnter>
+			<OnLeave>
+				GameTooltip:Hide();
+			</OnLeave>
+			<OnClick>
+				if ( IsModifiedClick("CHATLINK") and self.spellID) then
+					local spellLink = GetSpellLink(self.spellID);
+					ChatEdit_InsertLink(spellLink);
+				end
+			</OnClick>
+		</Scripts>
+	</Button>
+
+	<Button name="ImmersionTitleButtonTemplate" virtual="true">
+		<Size x="310" y="64" />
+		<Layers>
+			<Layer level="OVERLAY">
+				<Texture parentKey="Icon" name="$parentGossipIcon">
+					<Size x="20" y="20"/>
+					<Anchors>
+						<Anchor point="LEFT" x="16" y="0"/> 
+					</Anchors>
+				</Texture>
+			</Layer>
+			<Layer level="ARTWORK">
+				<FontString parentKey="Label" inherits="DialogButtonHighlightText" justifyH="LEFT">
+					<Size x="250" y="0"/>
+					<Anchors>
+						<Anchor point="TOPLEFT" x="42" y="-16"/>
+					</Anchors>
+				</FontString>
+				<FontString parentKey="Counter" inherits="GameTooltipTextSmall">
+					<Anchors>
+						<Anchor point="LEFT" x="8" y="0"/>
+					</Anchors>
+				</FontString>
+			</Layer>
+		</Layers>
+		<Frames>
+			<Frame parentKey="Overlay" alpha="1" setAllPoints="true" frameLevel="6"/>
+			<Frame parentKey="Hilite" alpha="0.01" setAllPoints="true" frameLevel="7"/>
+		</Frames>
+		<HighlightTexture parentKey="HighlightTexture" file="Interface\AddOns\Immersion\Textures\PvPMegaQueue" alphaMode="ADD">
+			<TexCoords left="0.00195313" right="0.63867188" top="0.70703125" bottom="0.76757813"/>
+			<Anchors>
+				<Anchor point="TOPLEFT" x="0" y="-4"/>
+				<Anchor point="BOTTOMRIGHT" x="0" y="4"/>
+			</Anchors>
+		</HighlightTexture>
+		<Scripts>
+			<OnLoad>
+				self:SetFontString(self.Label);
+			</OnLoad>
+		</Scripts>
+	</Button>
+
+	<GameTooltip name="ImmersionItemTooltipTemplate" inherits="GameTooltipTemplate" virtual="true" hidden="true">
+		<Frames>
+			<Frame parentKey="Hilite" alpha="0.01" frameLevel="7" setAllPoints="true"/>
+			<Frame name="$parentIcon" parentKey="Icon">
+				<Size x="70" y="65"/>
+				<Anchors>
+					<Anchor point="TOPRIGHT" x="16" y="10"/>
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<Texture parentKey="Texture">
+							<Size x="34" y="34"/>
+							<Anchors>
+								<Anchor point="CENTER" x="2" y="0"/>
+							</Anchors>
+						</Texture>
+					</Layer>
+					<Layer level="OVERLAY">
+						<Texture parentKey="Border" file="Interface\AddOns\Immersion\Textures\Spellbook-Parts" setAllPoints="true">
+							<TexCoords left="0.27734375" right="0.0039062" top="0.44140625" bottom="0.69531250"/>
+						</Texture>
+					</Layer>
+				</Layers>
+				<Scripts>
+					<OnLoad>
+						self:SetFrameLevel(10);
+						self:SetScale(0.75);
+					</OnLoad>
+				</Scripts>
+			</Frame>
+			<Button parentKey="Button" registerForClicks="LeftButtonUp,RightButtonUp">
+				<HighlightTexture parentKey="HighlightTexture" file="Interface\AddOns\Immersion\Textures\PvPMegaQueue" alphaMode="ADD" alpha="0.25">
+					<TexCoords left="0.00195313" right="0.63867188" top="0.70703125" bottom="0.76757813"/>
+					<Anchors>
+						<Anchor point="TOPLEFT" x="0" y="-4"/>
+						<Anchor point="BOTTOMRIGHT" x="0" y="4"/>
+					</Anchors>
+				</HighlightTexture>
+			</Button>
+		</Frames>
+		<Scripts>
+			<OnLoad inherit="append">
+				self.shoppingTooltips = GameTooltip.shoppingTooltips;
+				
+				self:SetBackdropBorderColor(TOOLTIP_DEFAULT_COLOR.r, TOOLTIP_DEFAULT_COLOR.g, TOOLTIP_DEFAULT_COLOR.b);
+				self:SetBackdropColor(TOOLTIP_DEFAULT_BACKGROUND_COLOR.r, TOOLTIP_DEFAULT_BACKGROUND_COLOR.g, TOOLTIP_DEFAULT_BACKGROUND_COLOR.b);
+			</OnLoad>
+			<OnShow>
+				-- Readjust tooltip size to fit the icon
+				C_Timer.After(0, function()
+					local width, height = self:GetSize()
+					self:SetSize(width + 30, height + 4)
+				end)
+			</OnShow>
+		</Scripts>
+	</GameTooltip>
+
+	<!-- Main frame -->
+	<Frame name="ImmersionFrame" parent="UIParent" hidden="true" frameStrata="HIGH">
+		<Frames>
+			<Frame parentKey="Inspector" hidden="true">
+				<Size x="1" y="1"/>
+				<Anchors>
+					<Anchor point="CENTER" relativeTo="UIParent" x="0" y="0"/>
+				</Anchors>
+				<Layers>
+					<Layer level="BACKGROUND">
+						<Texture parentKey="Background">
+							<Anchors>
+								<Anchor point="TOPLEFT" relativeTo="UIParent" />
+								<Anchor point="BOTTOMRIGHT" relativeTo="UIParent" />
+							</Anchors>
+							<Animations>
+								<AnimationGroup parentKey="InAnim">
+									<Alpha startDelay="0" duration="0" order="1" change="-1"/>
+									<Alpha startDelay="0.25" duration="0.5" order="2" change="1"/>
+								</AnimationGroup>
+							</Animations>
+						</Texture>
+					</Layer>
+				</Layers>
+				<Frames>
+					<Frame parentKey="Choices" name="$parentChoices">
+						<Size x="1" y="1"/>
+						<Anchors>
+							<Anchor point="TOP"/>
+						</Anchors>						
+						<Layers>
+							<Layer level="ARTWORK">
+								<FontString parentKey="Text" inherits="Fancy22Font" justifyH="LEFT" hidden="true">
+									<Anchors>
+										<Anchor point="TOPLEFT" x="0" y="0"/>
+									</Anchors>
+									<Color r="1" g=".82" b="0"/>
+								</FontString>
+							</Layer>
+						</Layers>
+					</Frame>
+					<Frame parentKey="Extras">
+						<Size x="1" y="1"/>
+						<Anchors>
+							<Anchor point="TOP" relativeTo="$parentChoices" relativePoint="BOTTOM" x="0" y="-8"/>
+						</Anchors>						
+						<Layers>
+							<Layer level="ARTWORK">
+								<FontString parentKey="Text" inherits="Fancy22Font" justifyH="LEFT" hidden="true">
+									<Anchors>
+										<Anchor point="TOPLEFT" x="0" y="0"/>
+									</Anchors>
+									<Color r="1" g=".82" b="0"/>
+								</FontString>
+							</Layer>
+						</Layers>
+					</Frame>
+				</Frames>
+			</Frame>
+			<Frame parentKey="TitleButtons" useParentLevel="true">
+				<Size x="300" y="0"/>
+				<Scripts>
+					<OnLoad>
+						self.Buttons = {};
+						self.Active = {};
+						self.idx = 1;
+					</OnLoad>
+				</Scripts>
+			</Frame>
+			<Button name="$parentTalkBox" parentKey="TalkBox" toplevel="true" frameStrata="HIGH" frameLevel="1">
+				<Size x="570" y="155"/>
+				<Anchors>
+					<Anchor point="BOTTOM" relativeTo="ImmersionFrame" relativePoint="BOTTOM" x="0" y="150"/>
+				</Anchors>
+				<Frames>
+					<Frame parentKey="Hilite" useParentLevel="true" alpha="0.01">
+						<Anchors>
+							<Anchor point="TOPLEFT" x="8" y="-8"/>
+							<Anchor point="BOTTOMRIGHT" x="-8" y="8"/>
+						</Anchors>
+					</Frame>
+					<Frame parentKey="Elements" useParentLevel="true">
+						<Size x="1" y="1"/>
+						<Anchors>
+							<Anchor point="TOP" relativeTo="$parent" relativePoint="BOTTOM" x="0" y="8"/>
+						</Anchors>
+						<Scripts>
+							<OnLoad>
+								self.Active = {};
+							</OnLoad>
+						</Scripts>
+						<Frames>
+							<Frame parentKey="Content" name="ImmersionContentFrame">
+								<Size x="570" y="403"/>
+								<Anchors>
+									<Anchor point="TOPLEFT" x="24" y="-16"/>
+								</Anchors>
+								<Frames>
+
+									<Frame parentKey="SpecialObjectivesFrame" hidden="true">
+										<Size x="285" y="10"/>
+										<Anchors>
+											<Anchor point="CENTER" />
+										</Anchors>
+										<Layers>
+											<Layer level="OVERLAY">
+												<FontString parentKey="SpellObjectiveLearnLabel" inherits="QuestFontNormalSmall" justifyH="LEFT" text="LEARN_SPELL_OBJECTIVE"/>
+											</Layer>
+										</Layers>
+										<Frames>
+											<Button parentKey="SpellObjectiveFrame" inherits="ImmersionQuestSpellTemplate" hidden="true"/>
+										</Frames>
+									</Frame>
+
+									<Frame parentKey="RewardsFrame" hidden="true">
+										<Size x="285" y="10" />
+										<Anchors>
+											<Anchor point="CENTER" />
+										</Anchors>
+										<Layers>
+											<Layer level="BACKGROUND">
+												<FontString parentKey="Header" inherits="QuestTitleFont" text="QUEST_REWARDS" justifyH="LEFT">
+													<!-- <Size x="200" y="0" /> -->
+													<Anchors>
+														<Anchor point="TOPLEFT" x="0" y="-4"/>
+													</Anchors>
+												</FontString>
+												<FontString parentKey="ItemChooseText" inherits="SystemFont_Shadow_Med3" text="REWARD_CHOICES" hidden="true" justifyH="LEFT">
+													<Size x="200" y="0"/>
+												</FontString>
+												<FontString name="$parentItemReceiveText" parentKey="ItemReceiveText" inherits="SystemFont_Shadow_Med3" hidden="true" justifyH="LEFT" />
+												<FontString parentKey="PlayerTitleText" inherits="SystemFont_Shadow_Med3" text="REWARD_TITLE" hidden="true" justifyH="LEFT" />
+											</Layer>
+										</Layers>
+										<Frames>
+											<Button parentKey="HonorFrame" inherits="ImmersionItemButtonTemplate" hidden="true"/>
+											<Button name="ImmersionQuestInfoItem1" inherits="ImmersionItemButtonTemplate, ImmersionRewardItemCodeTemplate" hidden="true">
+												<Scripts>
+													<OnLoad>
+														self:SetParentArray("Buttons", self)
+													</OnLoad>
+												</Scripts>
+											</Button>
+											<Frame parentKey="MoneyFrame" name="$parentMoneyFrame" inherits="MoneyFrameTemplate">
+												<Anchors>
+													<!-- <Anchor point="RIGHT" relativeTo="ImmersionElementsFrame" relativePoint="LEFT" x="230" y="6"/> -->
+													<Anchor point="LEFT" relativeTo="$parentItemReceiveText" relativePoint="RIGHT" x="15" y="0"/>
+												</Anchors>
+												<Scripts>
+													<OnLoad>
+														MoneyFrame_OnLoad(self);
+														MoneyFrame_SetType(self, "STATIC");
+													</OnLoad>
+												</Scripts>
+											</Frame>
+											<Frame parentKey="XPFrame">
+												<Size x="280" y="20"/>
+												<Layers>
+													<Layer level="BACKGROUND">
+														<FontString name="$parentReceiveText" parentKey="ReceiveText" inherits="QuestFont" text="EXPERIENCE_COLON">
+															<Anchors>
+																<Anchor point="LEFT" x="0" y="0"/>
+															</Anchors>
+														</FontString>
+														<FontString parentKey="ValueText" inherits="NumberFontNormalLarge" justifyH="LEFT">
+															<Anchors>
+																<Anchor point="LEFT" relativeTo="$parentReceiveText" relativePoint="RIGHT" x="15" y="0"/>
+															</Anchors>
+														</FontString>
+													</Layer>
+												</Layers>
+											</Frame>
+											<Frame parentKey="TitleFrame">
+												<Size x="500" y="39"/>
+												<Layers>
+													<Layer level="BACKGROUND">
+														<Texture name="$parentIcon" parentKey="Icon" file="Interface\Icons\INV_Misc_Note_02">
+															<Size x="39" y="39"/>
+															<Anchors>
+																<Anchor point="TOPLEFT" x="0" y="0"/>
+															</Anchors>
+														</Texture>
+														<Texture name="$parentFrameLeft" parentKey="FrameLeft" file="Interface\QuestFrame\UI-QuestItemNameFrame">
+															<Size x="4" y="40"/>
+															<Anchors>
+																<Anchor point="LEFT" relativeTo="$parentIcon" relativePoint="RIGHT" x="2" y="0"/>
+															</Anchors>
+															<TexCoords left="0.078125" right="0.1171875" top="0.15625" bottom="0.828125"/>
+														</Texture>
+														<Texture name="$parentFrameCenter" parentKey="FrameCenter" file="Interface\QuestFrame\UI-QuestItemNameFrame">
+															<Size x="200" y="40"/>
+															<Anchors>
+																<Anchor point="LEFT" relativeTo="$parentFrameLeft" relativePoint="RIGHT" x="0" y="0"/>
+															</Anchors>
+															<TexCoords left="0.1171875" right="0.828125" top="0.15625" bottom="0.828125"/>
+														</Texture>
+														<Texture parentKey="FrameRight" file="Interface\QuestFrame\UI-QuestItemNameFrame">
+															<Size x="11" y="40"/>
+															<Anchors>
+																<Anchor point="LEFT" relativeTo="$parentFrameCenter" relativePoint="RIGHT" x="0" y="0"/>
+															</Anchors>
+															<TexCoords left="0.828125" right="0.9140625" top="0.15625" bottom="0.828125"/>
+														</Texture>
+													</Layer>
+													<Layer level="OVERLAY">
+														<FontString parentKey="Name" inherits="GameFontHighlight" justifyH="LEFT">
+															<Size x="200" y="0"/>
+															<Anchors>
+																<Anchor point="LEFT" relativeTo="$parentFrameLeft" x="8" y="-2"/>
+															</Anchors>
+														</FontString>
+													</Layer>
+												</Layers>
+											</Frame>
+											<Frame parentKey="MoneyIcon" hidden="true">
+												<Size x="20" y="18"/>
+												<Layers>
+													<Layer level="ARTWORK">
+														<Texture parentKey="MoneyIcon" file="Interface\AddOns\Immersion\Textures\bags.blp">
+															<TexCoords left="0.128906" right="0.167969" top="0.457031" bottom="0.527344" />
+														</Texture>
+													</Layer>
+												</Layers>
+												<Scripts>
+													<OnLoad function="RaiseFrameLevel"/>
+												</Scripts>
+											</Frame>
+											<Frame parentKey="ItemHighlight" hidden="true">
+												<Size x="202" y="48"/>
+												<Anchors>
+													<Anchor point="TOPLEFT"/>
+												</Anchors>
+												<Layers>
+													<Layer level="BACKGROUND">
+														<Texture name="$parentIconHighlight" parentKey="Icon" file="Interface\AddOns\Immersion\Textures\Button_Hilite" alphaMode="ADD">
+															<Size x="52" y="52"/>
+															<Anchors>
+																<!-- <Anchor point="TOPLEFT" x="-4" y="4"/> -->
+																<Anchor point="TOPLEFT"/>
+															</Anchors>
+															<Animations>
+																<AnimationGroup parentKey="InAnim">
+																	<Scale startDelay="0" duration="0.20" order="1" scaleX="1.15" scaleY="1.15">
+																		<Origin point="CENTER"/>
+																	</Scale>
+																</AnimationGroup>
+															</Animations>
+															<!-- <TexCoords left="0.00390625" right="0.53125" top="0.155273" bottom="0.287109"/> -->
+														</Texture>
+														<Texture file="Interface\AddOns\Immersion\Textures\PvPMegaQueue" alphaMode="ADD" parentKey="NameTag">
+															<Size x="182" y="44"/>
+															<Anchors>
+																<Anchor point="LEFT" relativeTo="$parentIconHighlight" relativePoint="RIGHT" x="-8" y="0"/>
+															</Anchors>
+															<TexCoords left="0.00195313" right="0.63867188" top="0.70703125" bottom="0.76757813"/>
+														</Texture>
+													</Layer>
+													<Layer level="ARTWORK">
+														<Texture parentKey="TextSheen" hidden="false" alpha="0.01" alphaMode="ADD" file="Interface\AddOns\Immersion\Textures\TalkingHeads">
+															<Size x="180" y="50"/>
+															<Anchors>
+																<Anchor point="LEFT" relativeTo="$parentIconHighlight" relativePoint="RIGHT" x="-14" y="0"/>
+															</Anchors>
+															<Animations>
+																<AnimationGroup parentKey="InAnim">
+																	<Alpha startDelay="0" duration="0.35" order="1" change="0.7"/>
+																	<Scale startDelay="0" duration="0.35" order="1" scaleX="1" scaleY="1">
+																		<Origin point="LEFT"/>
+																	</Scale>
+																	<Alpha startDelay="0.5" duration="0.35" order="1" change="-0.7"/>
+																</AnimationGroup>
+															</Animations>
+															<TexCoords left="0.55957" right="0.804688" top="0.154297" bottom="0.223633"/>
+														</Texture>
+													</Layer>
+												</Layers>
+												<Scripts>
+													<OnLoad function="RaiseFrameLevel"/>
+												</Scripts>
+											</Frame>
+										</Frames>
+										<Scripts>
+											<OnLoad>
+												self:SetParentArray("Buttons", self:GetParent());
+												self.buttonTemplate = "ImmersionItemButtonTemplate, ImmersionRewardItemCodeTemplate";
+												self.spellRewardPool = ImmersionAPI.CreateFramePool("BUTTON", self, "ImmersionQuestSpellTemplate, ImmersionRewardSpellCodeTemplate");
+												self.spellHeaderPool = ImmersionAPI.CreateFontStringPool(self, "BACKGROUND", 0, "QuestInfoSpellHeaderTemplate");
+												ImmersionQuestInfoItem1.container = self:GetParent():GetParent();
+												ImmersionQuestInfoItem1.highlight = self.ItemHighlight;
+											</OnLoad>
+										</Scripts>
+									</Frame>
+
+								</Frames>
+								<Layers>
+									<Layer level="BACKGROUND">
+										<!-- <Size x="285" y="0"/> -->
+										<FontString parentKey="ObjectivesHeader" inherits="QuestTitleFont" text="QUEST_OBJECTIVES" justifyH="LEFT" hidden="true"/>
+										<FontString parentKey="ObjectivesText" inherits="SystemFont_Shadow_Med3" justifyH="LEFT" hidden="true"/>
+										<FontString parentKey="GroupSize" inherits="SystemFont_Shadow_Med3" hidden="true"/>
+										<FontString parentKey="RewardText" inherits="SystemFont_Shadow_Med3" justifyH="LEFT" hidden="true"/>
+									</Layer>
+								</Layers>
+							</Frame>
+							<Frame parentKey="Progress" hidden="true">
+								<Size x="570" y="403"/>
+								<Anchors>
+									<Anchor point="TOPLEFT" x="32" y="-32"/>
+								</Anchors>
+								<Layers>
+									<Layer level="BACKGROUND">
+										<FontString name="$parentReqText" parentKey="ReqText" inherits="QuestTitleFont" text="TURN_IN_ITEMS" justifyH="LEFT">
+											<Anchors>
+												<Anchor point="TOPLEFT" x="0" y="0"/>
+											</Anchors>
+										</FontString>
+										<FontString name="$parentMoneyText" parentKey="MoneyText" inherits="QuestFontNormalSmall" text="REQUIRED_MONEY" justifyH="LEFT">
+											<Anchors>
+												<Anchor point="TOPLEFT" relativeTo="$parentReqText" relativePoint="BOTTOMLEFT" x="0" y="-10"/>
+											</Anchors>
+										</FontString>
+									</Layer>
+								</Layers>
+								<Frames>
+									<Frame parentKey="MoneyFrame" name="$parentMoneyFrame" inherits="MoneyFrameTemplate">
+										<Anchors>
+											<Anchor point="LEFT" relativeTo="$parentMoneyText" relativePoint="RIGHT" x="10" y="0"/>
+										</Anchors>
+										<Scripts>
+											<OnLoad>
+												SmallMoneyFrame_OnLoad(self);
+												MoneyFrame_SetType(self, "STATIC");
+											</OnLoad>
+										</Scripts>
+									</Frame>
+									<Button name="ImmersionProgressItem1" inherits="ImmersionItemButtonTemplate, ImmersionRewardItemCodeTemplate" hidden="true">
+										<Scripts>
+											<OnLoad>
+												self:SetParentArray("Buttons", self)
+											</OnLoad>
+										</Scripts>
+									</Button>
+								</Frames>
+								<Scripts>
+									<OnLoad>
+										self:SetParentArray("Buttons", self:GetParent())
+										self.buttonTemplate = "ImmersionItemButtonTemplate, ImmersionRewardItemCodeTemplate";
+										ImmersionProgressItem1.container = self:GetParent():GetParent();
+									</OnLoad>
+								</Scripts>
+							</Frame>
+						</Frames>
+					</Frame>
+					<Frame name="$parentNameFrame" parentKey="NameFrame" setAllPoints="true" useParentLevel="true">
+						<Layers>
+							<Layer level="ARTWORK">
+								<FontString name="$parentName" parentKey="Name" inherits="Fancy22Font" alpha="1" justifyH="LEFT">
+									<Anchors>
+										<Anchor point="RIGHT" x="-60" y="0"/>
+									</Anchors>
+									<Color r="1" g=".82" b="0"/>
+									<Animations>
+										<AnimationGroup parentKey="FadeIn">
+											<Alpha duration="0" change="-1" order="1"/>
+											<Alpha duration="0.25" change="1" order="1"/>
+										</AnimationGroup>
+									</Animations>
+								</FontString>
+							</Layer>
+						</Layers>
+					</Frame>
+					<Frame parentKey="TextFrame" setAllPoints="true" useParentLevel="true">
+						<Layers>
+							<Layer level="ARTWORK">
+								<FontString name="$parentText" parentKey="Text" inherits="GameFontHighlightLarge" alpha="1" justifyH="LEFT" justifyV="TOP" mixin="ShrinkUntilTruncateFontStringMixin">
+									<Anchors>
+										<Anchor point="TOPLEFT" relativeTo="$parentNameFrameName" relativePoint="BOTTOMLEFT" x="0" y="-3"/>
+										<Anchor point="BOTTOMRIGHT" x="-42" y="12"/>
+									</Anchors>
+									<Color r="1" g="1" b="1"/>
+									<Animations>
+										<AnimationGroup parentKey="FadeIn">
+											<Alpha duration="0" change="-1" order="1"/>
+											<Alpha duration="0.25" change="1" order="1"/>
+										</AnimationGroup>
+									</Animations>
+								</FontString>
+								<FontString parentKey="SpeechProgress" inherits="Fancy22Font" justifyH="RIGHT" justifyV="BOTTOM">
+									<Anchors>
+										<Anchor point="BOTTOMRIGHT" relativeTo="$parent" relativePoint="BOTTOMRIGHT" x="-22" y="22"/>
+									</Anchors>
+									<Animations>
+										<AnimationGroup parentKey="FadeIn">
+											<Alpha duration="0" change="-1" order="1"/>
+											<Alpha duration="0.25" change="1" order="1"/>
+										</AnimationGroup>
+									</Animations>
+								</FontString>
+							</Layer>
+						</Layers>
+						<Frames>
+							
+						</Frames>
+					</Frame>
+					<Frame parentKey="BackgroundFrame" setAllPoints="true" useParentLevel="true">
+						<Layers>
+							<Layer level="BACKGROUND">
+								<Texture parentKey="TextBackground" hidden="false" file="Interface\AddOns\Immersion\Textures\TalkingHeads"> <!-- middle -->
+									<!-- <Size x="570" y="155"/> -->
+									<TexCoords left=" 0.000976562" right=" 0.557617" top="0.000976562" bottom="0.152344"/>
+									<Animations>
+										<AnimationGroup parentKey="FadeIn">
+											<Alpha startDelay="0.4" duration="0" change="-1" order="1"/>
+											<Alpha startDelay="0.4" duration="0.75" change="1" order="1"/>
+											<Scripts>
+												<OnPlay>
+													print("ONPLAY")
+												</OnPlay>
+											</Scripts>
+										</AnimationGroup>
+									</Animations>
+								</Texture>
+							</Layer>
+							<Layer level="BACKGROUND">
+								<Texture parentKey="SolidBackground" hidden="true" file="Interface\AddOns\Immersion\Textures\TalkingHeads"> <!-- middle -->
+									<!-- <Size x="570" y="155"/> -->
+									<Animations>
+										<AnimationGroup parentKey="FadeIn">
+											<Alpha startDelay="0.4" duration="0" change="-1" order="1"/>
+											<Alpha startDelay="0.4" duration="0.75" change="1" order="1"/>
+											<Scripts>
+												<OnPlay>
+													print("ONPLAY")
+												</OnPlay>
+											</Scripts>
+										</AnimationGroup>
+									</Animations>
+									<TexCoords left=" 0.000976562" right=" 0.557617" top="0.000976562" bottom="0.152344"/>
+								</Texture>
+							</Layer>
+							<Layer level="ARTWORK">
+								<Texture parentKey="OverlayKit" hidden="true">
+									<Anchors>
+										<Anchor point="BOTTOMRIGHT" x="0" y="0"/>
+									</Anchors>
+								</Texture>
+							</Layer>
+						</Layers>
+						<Scripts>
+							<OnLoad>
+								self.TextBackground:SetTexture([[Interface\AddOns\Immersion\Textures\TalkingHeads.blp]]);
+								self.TextBackground:SetTexCoord(0.000976562, 0.557617, 0.000976562, 0.152344);
+							</OnLoad>
+						</Scripts>
+						<!-- <Scripts> Keep in case of implementing skins:
+							Default 	1, 156
+							Alliance 	158, 313
+							Horde 		315, 470
+							Neutral 	472, 627
+							Custom1		629, 784
+							Custom2 	786, 941
+							<OnLoad>
+								self.TextBackground:SetTexture([[Interface\AddOns\Immersion\Textures\TalkingHeads.blp]]);
+								self.TextBackground:SetTexCoord(0.000976562, 0.557617, 786/1024, 941/1024);
+							</OnLoad>
+						</Scripts> -->
+					</Frame>
+					<Frame name="$parentPortraitFrame" parentKey="PortraitFrame" frameLevel="10" setAllPoints="true" toplevel="true">
+						<Layers>
+							<Layer level="OVERLAY">
+								<Texture name="$parentPortrait" parentKey="Portrait" hidden="false" alpha="1" alphaMode="BLEND" >
+									<Anchors>
+										<Anchor point="TOPLEFT" x="5" y="-6"/>
+									</Anchors>
+								</Texture>
+							</Layer>
+						</Layers>
+						<Animations>
+							<AnimationGroup parentKey="FadeIn">
+								<Alpha change="-1" duration="0" order="1"/>
+								<Alpha change="1" duration="0.75" order="1"/>
+							</AnimationGroup>
+						</Animations>
+						<Scripts>
+							<OnLoad>
+								self.Portrait:SetTexture([[Interface\AddOns\Immersion\Textures\TalkingHeads.blp]], true);
+								self.Portrait:SetSize(143, 143);
+								self.Portrait:SetTexCoord(0.55957, 0.699219, 0.000976562, 0.140625);
+							</OnLoad>
+						</Scripts>
+					</Frame>
+					<Frame name="$parentMainFrame" parentKey="MainFrame" setAllPoints="true" useParentLevel="true">
+						<Layers>
+							<Layer level="OVERLAY">
+								<Texture parentKey="Indicator">
+									<Anchors>
+										<Anchor point="TOPRIGHT" x="-42" y="-20"/>
+									</Anchors>
+									<AnimationGroup parentKey="InAnim">
+										<Alpha duration="0.75" order="1" change="1"/>
+									</AnimationGroup>
+								</Texture>
+								<Texture name="$parentSheen" parentKey="Sheen" hidden="false" alpha="0.01" alphaMode="ADD" file="Interface\AddOns\Immersion\Textures\TalkingHeads.blp">
+									<Size x="262" y="34"/>
+									<Anchors>
+										<Anchor point="LEFT" relativeTo="ImmersionFrameTalkBoxNameFrameName" x="-48"/>
+									</Anchors>
+									<Animations>
+										<AnimationGroup parentKey="InAnim">
+											<Alpha startDelay="0.5" duration="0.5" order="1" change="0.7"/>
+											<Scale startDelay="0.5" duration="0.25" order="1" scaleX="1" scaleY="1">
+												<Origin point="LEFT"/>
+											</Scale>
+											<Alpha startDelay="1" duration="0.5" order="1" change="-0.7"/>
+										</AnimationGroup>
+										<AnimationGroup parentKey="FadeIn">
+											<Alpha startDelay="0" duration="0.5" order="1" change="0.7"/>
+											<Scale startDelay="0" duration="0.25" order="1" scaleX="1" scaleY="1">
+												<Origin point="LEFT"/>
+											</Scale>
+											<Alpha startDelay="0.5" duration="0.5" order="1" change="-0.7"/>
+										</AnimationGroup>
+									</Animations>
+									<TexCoords left="0.55957" right="0.81543" top="0.225586" bottom="0.258789" />
+								</Texture>
+								<Texture name="$parentTextSheen" parentKey="TextSheen" hidden="false" alpha="0.01" alphaMode="ADD" file="Interface\AddOns\Immersion\Textures\TalkingHeads.blp">
+									<Size x="251" y="71"/>
+									<Anchors>
+										<Anchor point="LEFT" relativeTo="ImmersionFrameTalkBoxText" x="-48" y="16"/>
+									</Anchors>
+									<Animations>
+										<AnimationGroup parentKey="InAnim">
+											<Alpha startDelay="0.75" duration="0.5" order="1" change="0.7"/>
+											<Scale startDelay="0.75" duration="0.25" order="1" scaleX="1" scaleY="1">
+												<Origin point="LEFT"/>
+											</Scale>
+											<Alpha startDelay="1.25" duration="0.5" order="1" change="-0.7"/>
+										</AnimationGroup>
+										<AnimationGroup parentKey="FadeIn">
+											<Alpha startDelay="0.25" duration="0.5" order="1" change="0.7"/>
+											<Scale startDelay="0.25" duration="0.25" order="1" scaleX="1" scaleY="1">
+												<Origin point="LEFT"/>
+											</Scale>
+											<Alpha startDelay="0.75" duration="0.5" order="1" change="-0.7"/>
+										</AnimationGroup>
+									</Animations>
+									<TexCoords left="0.55957" right="0.804688" top="0.154297" bottom="0.223633" />
+								</Texture>
+							</Layer>
+						</Layers>
+						<Frames>
+							<PlayerModel parentKey="Model" alpha="0.01" alphaMode="BLEND" >
+								<Size x="115" y="115"/>
+								<Anchors>
+									<Anchor point="TOPLEFT" x="21" y="-21"/>
+								</Anchors>
+								<Layers>
+									<Layer level="BACKGROUND">
+										<Texture parentKey="PortraitBG" hidden="false" alphaMode="BLEND" file="Interface\AddOns\Immersion\Textures\TalkingHeads.blp">
+											<Size x="115" y="115" />
+											<Anchors>
+												<Anchor point="TOPLEFT"/>
+											</Anchors>
+											<TexCoords left="0.55957" right="0.671875" top="0.307617" bottom="0.419922" />
+											<AnimationGroup parentKey="InAnim">
+												<Alpha duration="0.75" order="1" change="1"/>
+											</AnimationGroup>
+										</Texture>
+									</Layer>
+									<Layer level="ARTWORK" textureSubLevel="-2">
+										<Texture parentKey="ModelShadow" file="Interface\AddOns\Immersion\Textures\artifactuishadow.blp">
+											<Size x="115" y="115"/>
+											<Anchors>
+												<Anchor point="TOPLEFT"/>
+											</Anchors>
+											<TexCoords left="0.000976562" right="0.875977"  top="0.000976562" bottom="0.601562" />
+										</Texture>
+									</Layer>
+								</Layers>
+								<AnimationGroup parentKey="InAnim">
+									<Alpha duration="0.75" order="1" change="1"/>
+								</AnimationGroup>
+							</PlayerModel>
+							<Frame parentKey="Overlay" toplevel="true">
+								<Size x="96" y="96"/>
+								<Anchors>
+									<Anchor point="TOPLEFT" x="21" y="-17"/>
+								</Anchors>
+								<Layers>
+									<Layer level="OVERLAY" textureSubLevel="1">
+										<Texture name="$parentGlow_TopBar" parentKey="Glow_TopBar" hidden="false" alpha="0.01" alphaMode="ADD" file="Interface\AddOns\Immersion\Textures\TalkingHeads.blp">
+											<Size x="81" y="23" />
+											<Anchors>
+												<Anchor point="CENTER" relativeTo="ImmersionFrameTalkBoxPortraitFramePortrait" relativePoint="TOP" x="0" y="-11"/>
+											</Anchors>
+											<TexCoords left="0.806641" right="0.885742" top="0.154297" bottom="0.176758" />
+											<Animations>
+												<AnimationGroup parentKey="InAnim">
+													<Alpha startDelay="0.15" duration="0.25" order="1" change="0.7"/>
+													<Scale startDelay="0.15" duration="0.25" order="1" scaleX="1.5" scaleY="1"/>
+													<Alpha startDelay="0.4" duration="0.5" order="1" change="-0.7"/>
+												</AnimationGroup>
+											</Animations>
+										</Texture>
+										<Texture name="$parentGlow_LeftBar" parentKey="Glow_LeftBar" hidden="false" alpha="0.01" alphaMode="ADD" file="Interface\AddOns\Immersion\Textures\TalkingHeads.blp">
+											<Size x="23" y="86" />
+											<Anchors>
+												<Anchor point="CENTER" relativeTo="ImmersionFrameTalkBoxPortraitFramePortrait" relativePoint="LEFT" x="11" y="25"/>
+											</Anchors>
+											<TexCoords left="0.673828" right="0.696289" top="0.307617" bottom="0.391602" />
+											<Animations>
+												<AnimationGroup parentKey="InAnim">
+													<Alpha startDelay="0.35" duration="0.25" order="1" change="0.7"/>
+													<Translation startDelay="0.35" duration="0.8" order="1" offsetX="0" offsetY="-10"/>
+													<Scale startDelay="0.35" duration="0.7" order="1" scaleX="1" scaleY="1.6">
+														<Origin point="TOP"/>
+													</Scale>
+													<Alpha startDelay="0.85" duration="0.25" order="1" change="-0.7"/>
+												</AnimationGroup>
+											</Animations>
+										</Texture>
+										<Texture name="$parentGlow_RightBar" parentKey="Glow_RightBar" hidden="false" alpha="0.01" alphaMode="ADD" file="Interface\AddOns\Immersion\Textures\TalkingHeads.blp">
+											<Size x="23" y="86" />
+											<Anchors>
+												<Anchor point="CENTER" relativeTo="ImmersionFrameTalkBoxPortraitFramePortrait" relativePoint="RIGHT" x="-11" y="25"/>
+											</Anchors>
+											<Animations>
+												<AnimationGroup parentKey="InAnim">
+													<Alpha startDelay="0.35" duration="0.25" order="1" change="0.7"/>
+													<Translation startDelay="0.35" duration="0.8" order="1" offsetX="0" offsetY="-10"/>
+													<Scale startDelay="0.35" duration="0.7" order="1" scaleX="1" scaleY="1.6">
+														<Origin point="TOP"/>
+													</Scale>
+													<Alpha startDelay="0.95" duration="0.25" order="1" change="-0.7"/>
+												</AnimationGroup>
+											</Animations>
+											<TexCoords left="0.673828" right="0.696289" top="0.307617" bottom="0.391602" />
+										</Texture>
+									</Layer>
+								</Layers>
+							</Frame>
+							<Button parentKey="CloseButton" inherits="UIPanelCloseButton" alphaMode="BLEND">
+								<Anchors>
+									<Anchor point="TOPRIGHT" x="-12" y="-12"/>
+								</Anchors>
+								<Scripts>
+									<OnClick>
+										local mainframe = self:GetParent():GetParent():GetParent();
+										mainframe:ClearToasts();
+										mainframe:ForceClose();
+									</OnClick>
+								</Scripts>
+							</Button>
+						</Frames>
+					</Frame>
+					<StatusBar parentKey="ProgressionBar" hidden="true">
+						<Size x="530" y="4"/>
+						<Anchors>
+							<Anchor point="BOTTOM" x="0" y="4"/>
+						</Anchors>
+						<Layers>
+							<Layer level="ARTWORK">
+								<Texture file="Interface\AddOns\Immersion\Textures\friendship-parts"> <!-- left edge -->
+									<Size x="20" y="15"/>
+									<Anchors>
+										<Anchor point="LEFT" x="-1" y="2"/>
+									</Anchors>
+									<TexCoords left="0.53515625" right="0.4" top="0.01562500" bottom="0.60937500"/>
+								</Texture>
+								<Texture file="Interface\AddOns\Immersion\Textures\friendship-parts"> <!-- right edge -->
+									<Size x="20" y="15"/>
+									<Anchors>
+										<Anchor point="RIGHT" x="1" y="2"/>
+									</Anchors>
+									<TexCoords left="0.4" right="0.53515625" top="0.01562500" bottom="0.60937500"/>
+								</Texture>
+								<Texture file="Interface\AddOns\Immersion\Textures\friendship-parts"> <!-- middle -->
+									<Size x="0" y="15"/>
+									<Anchors>
+										<Anchor point="LEFT" x="19" y="2"/>
+										<Anchor point="RIGHT" x="-19" y="2"/>
+									</Anchors>
+									<TexCoords left="0.3" right="0.4" top="0.01562500" bottom="0.60937500"/>
+								</Texture>
+							</Layer>
+							<Layer level="BACKGROUND">
+								<Texture setAllPoints="true">  <!-- bar fill background -->
+									<Color r="0" g="0" b="0" a="0.5"/>
+								</Texture>
+							</Layer>
+						</Layers>
+						<Scripts>
+							<OnShow>
+								self:SetAlpha(1);
+								if (not self.Text:IsSequence()) then
+									self:Hide();
+								end
+							</OnShow>
+							<OnUpdate>
+								self.throttle = self.throttle + elapsed;
+								if self.throttle > 0.015 then
+									local value = self.Text:GetCurrentProgress();
+									local modifiedValue = value or 1;
+									self:SetValue(modifiedValue);
+									if self.Text:GetNumRemaining() > 1 then
+										self:SetAlpha(1);
+									else 
+										self:SetAlpha(1 - (modifiedValue)^8);
+									end
+									if not value then
+										self:Hide();
+									end
+									self.throttle = 0;
+								end
+							</OnUpdate>
+							<OnLoad>
+								self.throttle = 0;
+								self.Text = self:GetParent().TextFrame.Text;
+								self:SetStatusBarTexture("Interface\\Buttons\\WHITE8x8", "BORDER", -1)
+								self:GetStatusBarTexture():SetGradient("VERTICAL", 8/255, 93/255, 72/255, 11/255, 136/255, 105/255);
+								
+								self:SetStatusBarColor(1, 0.8, 0);
+								self:SetMinMaxValues(0, 1);
+								self:SetFrameLevel(self:GetFrameLevel() - 1)
+							</OnLoad>
+						</Scripts>
+					</StatusBar>
+				</Frames>
+			</Button>
+			<Button name="$parentInspectInput" parentKey="InspectInput" hidden="true">
+				<Scripts>
+					<OnLoad>
+						self:RegisterForClicks("AnyUp", "AnyDown");
+						self:RegisterEvent("MODIFIER_STATE_CHANGED");
+					</OnLoad>
+					<OnClick>
+						local frame = self:GetParent();
+						if (button == 'ESCAPE' or GetBindingAction(button) == 'TOGGLEGAMEMENU') then
+							frame:ForceClose();
+							return;
+						end
+					</OnClick>
+					<OnEvent>
+						local frame = self:GetParent();
+						if ( frame:IsModifierDown() and frame.hasItems ) then
+							frame:ShowItems();
+							return;
+						else
+							local inspector = frame.Inspector;
+							if ( inspector.ShowFocusedTooltip ) then
+								inspector:ShowFocusedTooltip(false);
+							elseif ( inspector:IsVisible() ) then
+								inspector:Hide();
+							end
+						end
+					</OnEvent>
+				</Scripts>
+			</Button>
+			<Button name="$parentSelectInput" parentKey="SelectInput" hidden="true" registerForClicks="AnyDown">
+				<Scripts>
+					<OnClick>
+						local titles = self:GetParent();
+						titles:IsNumericInputs(titles, button);
+					</OnClick>
+				</Scripts>
+			</Button>
+			<Button name="$parentActionInput" parentKey="ActionInput" hidden="true" registerForClicks="AnyDown">
+				<Scripts>
+					<OnClick>
+						local frame = self:GetParent();
+						frame:IsActionInputs(frame, button);
+					</OnClick>
+				</Scripts>
+			</Button>
+		</Frames>
+	</Frame>
+</Ui>

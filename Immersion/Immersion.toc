@@ -1,0 +1,51 @@
+## Interface: 30300
+## Title: Immersion
+## Notes: Immersive replacement for quest & gossip
+## Version: 1.4.14
+## Author: Sebastian Lindfors
+## SavedVariables: ImmersionSetup
+## OptionalDeps: ConsolePort
+
+# Locale
+Locale\Locale.xml
+
+# Libs
+Libs\LibStub\LibStub.lua
+Libs\CallbackHandler-1.0\CallbackHandler-1.0.xml
+Libs\AceGUI-3.0\AceGUI-3.0.xml
+Libs\AceConfig-3.0\AceConfig-3.0.xml
+
+# Compatibility scripts
+Methods\Constants.lua
+Methods\Utils.lua
+Methods\Extensions.lua
+Methods\C_Timer.lua
+Interface.lua
+
+# Extra stuff & config
+Utils.lua
+Pools.lua
+Config.lua
+
+# Components
+Components\Scaler.lua
+Components\Titles.lua
+Components\Text.lua
+Components\Model.lua
+Components\Button.lua
+Components\Tooltip.lua
+Components\Elements.lua
+
+# Display
+Display\Animation.lua
+Display\Frame.xml
+Display\Onload.lua
+Display\Fademgr.lua
+
+# Logic
+Logic\Input.lua
+Logic\Frame.lua
+Logic\Talkbox.lua
+Logic\Events.lua
+Logic\Inspector.lua
+Logic\Toast.lua
