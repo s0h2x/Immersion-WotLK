@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+license: MIT license
+message: "If you use this software, please cite it as below."
+authors:
+  - family-names: Farajov
+    given-names: Emin
+    orcid: https://orcid.org/0009-0003-0382-6705
+title: "Immersion WotLK (3.3.5a)"
+version: 1.4.14
+date-released: 2023-05-30
+url: "https://github.com/s0h2x/Immersion-WotLK"
