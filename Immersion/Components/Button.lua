@@ -131,6 +131,7 @@ function Button:Init(id)
 	self.Counter:SetText(id < 10 and id or '')
 	----------------------------------
 	self:RegisterForDrag('LeftButton', 'RightButton')
+	self:EnableMouseWheel(true)
 	self:OnShow()
 	----------------------------------
 	L.SetBackdrop(self.Overlay, L.Backdrops.GOSSIP_NORMAL)
