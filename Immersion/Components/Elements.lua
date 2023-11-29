@@ -289,6 +289,7 @@ function Elements:ShowRewards()
 	local numQuestSpellRewards = 0
 	local totalHeight = 0
 	local GetSpell = GetRewardSpell
+	local knownSpell
 
 	do  -- Get data
 		questID = API:GetQuestID()
@@ -304,9 +305,10 @@ function Elements:ShowRewards()
 	do -- Spell rewards
 		for rewardSpellIndex = 1, numSpellRewards do
 			local texture, name, isTradeskillSpell, isSpellLearned = GetSpell(rewardSpellIndex)
-			local spellID = select(7, GetSpellInfo(name))
-			if spellID then
-				local knownSpell = tonumber(spellID) and IsSpellKnown(spellID)
+            		local spellLink = GetSpellLink(name)
+			if spellLink then
+				local spellID = string.match(spellLink, "spell:(%d+)")
+				knownSpell = IsSpellKnown(spellID)
 			end
 
 			-- only allow the spell reward if user can learn it
@@ -428,10 +430,12 @@ function Elements:ShowRewards()
 			-- Generate spell buckets
 			for rewardSpellIndex = 1, numSpellRewards do
 				local texture, name, isTradeskillSpell, isSpellLearned = GetSpell(rewardSpellIndex)
-				local spellID = select(7, GetSpellInfo(name))
-				if spellID then
-					local knownSpell = IsSpellKnown(spellID)
+				local spellLink = GetSpellLink(name)
+				if spellLink then
+					local spellID = string.match(spellLink, "spell:(%d+)")
+					knownSpell = IsSpellKnown(spellID)
 				end
+
 				if IsValidSpellReward(texture, knownSpell, isBoostSpell, garrFollowerID) then
 					local bucket = 	isTradeskillSpell 	and QUEST_SPELL_REWARD_TYPE_TRADESKILL_SPELL or
 									isBoostSpell 		and QUEST_SPELL_REWARD_TYPE_ABILITY or
