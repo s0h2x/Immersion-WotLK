@@ -1,7 +1,7 @@
 # Immersion-WotLK
 Immersive questing addon for World of Warcraft (WotLK-3.3.5a Backport)
 
-![alt tag](https://media.discordapp.net/attachments/1083384675030020186/1111712146292736000/FwgkxQp.png?raw=true&width=696&height=504)
+![alt tag](https://github.com/user-attachments/assets/301acafd-0c17-40c6-878f-a1767f15e568)
 
 #### Description
 Immersion is a replacement for the dated quest & gossip frames. [(full version)](https://www.curseforge.com/wow/addons/immersion)
